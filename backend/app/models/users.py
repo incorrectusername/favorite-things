@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Index
 from sqlalchemy.orm import relationship
 
 from app.utils import constants
@@ -6,8 +6,6 @@ from . import Base
 
 
 class User(Base):
-    __tablename__ = constants.USERS_TABLE
-
     id = Column(Integer, primary_key=True)
     email = Column(String(32), unique=True)
     password = Column(String(32))
@@ -16,3 +14,6 @@ class User(Base):
     def __init__(self, email, password):
         self.email = email
         self.password = password
+
+    __tablename__ = constants.USERS_TABLE
+    __table_args__ = (Index("user_email_idx", email),)

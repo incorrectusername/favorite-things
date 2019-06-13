@@ -16,3 +16,6 @@ def setup_logger(name, log_file, level=logging.DEBUG):
     logger.addHandler(handler)
 
     return logger
+
+
+log = setup_logger(__name__, "favorite_things.log")
