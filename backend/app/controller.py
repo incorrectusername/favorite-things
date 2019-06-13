@@ -34,3 +34,23 @@ def login_user():
         log.exception(ex)
         resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
     return resp
+
+
+@favorite_things.route("/fav/new", methods=['POST'])
+def create_new_favorite_thing():
+    try:
+        user_id = request["user_id"]
+        title = request["title"]
+        description = request.get("description")
+        ranking = request.get("ranking")
+        category = request.get("category")
+
+        log.info(f"creating new favorite thing for user:{user_id}")
+
+        core.save_new_favorite_thing(user_id, title, ranking, category, description)
+
+        resp = Response(json.dumps({"success": True}), status=200, mimetype='application/json')
+    except Exception as ex:
+        log.exception(ex)
+        resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
+    return resp

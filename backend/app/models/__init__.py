@@ -10,6 +10,9 @@ Session = sessionmaker(bind=engine)
 
 Base = declarative_base()
 
+metadata = db.MetaData()
+metadata.create_all(engine)
+
 
 @contextmanager
 def session_scope():

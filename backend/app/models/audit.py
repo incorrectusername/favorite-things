@@ -15,5 +15,7 @@ class Audit(Base):
     favorite_thing = relationship("FavoriteThings")
     text = Column(String(32))
 
-    def __init__(self, text):
+    def __init__(self, user_id: int, favorite_thing_id: int, text: str):
         self.text = text
+        self.favorite_thing_id = favorite_thing_id
+        self.user_id = user_id

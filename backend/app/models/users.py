@@ -31,4 +31,5 @@ class FavoriteCategory(Base):
         self.user = user
         self.category = category
 
+    __tablename__ = constants.USER_CATEGORY_MAPPER
     __table_args__ = (Index("user_category_idx", category, user_id, unique=True),)
