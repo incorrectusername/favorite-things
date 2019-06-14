@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, ForeignKey, String, Date, Index
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship
 
-from app.models.users import FavoriteCategory
 from app.utils import constants
-from . import Base, session_scope
+from . import Base
 
 
 def _get_date():
@@ -14,10 +13,10 @@ def _get_date():
 
 class FavoriteThings(Base):
     __tablename__ = constants.FAVORITE_THINGS_TABLE
-
-    id = Column(Integer, primary_key=True)
+    sr = Column(Integer, autoincrement=True)
+    id = Column(String(32), primary_key=True)
     title = Column(String(32), nullable=False)
-    description = Column(String(128))
+    description = Column(String(128), nullable=True)
     ranking = Column(Integer, nullable=False)
     category = Column(String(32), nullable=False)
     created = Column(Date, default=_get_date())
@@ -27,17 +26,11 @@ class FavoriteThings(Base):
     user_id = Column(Integer, ForeignKey(f"{constants.USERS_TABLE}.id"))
     user = relationship("User", back_populates="favorite_things")
 
-    def __init__(self, title, ranking: int, category: str, description: str = None):
+    def __init__(self, user_id: str, title, ranking: int, category: str, description: str = None):
+        self.user_id = user_id
         self.title = title
         self.description = description
         self.ranking = ranking
         self.category = category
-
-    @validates("category")
-    def validate_user_has_a_given_category(self, key, category):
-        with session_scope() as session:
-            assert category in session.query(FavoriteCategory).filter(FavoriteCategory.user_id == self.user_id).all()
-
-        return category
 
     __table_args__ = (Index("category_ranking_idx", category, ranking),)

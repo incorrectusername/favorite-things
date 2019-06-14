@@ -4,7 +4,9 @@ import sqlalchemy as db
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-engine = db.create_engine('mysql+pymysql://root:root@localhost/favorite')
+from app import log
+
+engine = db.create_engine('mysql+pymysql://admin:admin123@favorite.c1jc0lqfk06m.ap-south-1.rds.amazonaws.com/favorite')
 
 Session = sessionmaker(bind=engine)
 
@@ -21,7 +23,8 @@ def session_scope():
     try:
         yield session
         session.commit()
-    except Exception:
+    except Exception as e:
+        log.exception(e)
         session.rollback()
         raise
     finally:
