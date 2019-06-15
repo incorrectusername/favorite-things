@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, ForeignKey, String, Date, Index
+from sqlalchemy import Column, Integer, ForeignKey, String, Date, Index, types
 from sqlalchemy.orm import relationship
 
 from app.utils import constants
@@ -21,9 +21,8 @@ class FavoriteThings(Base):
     category = Column(String(32), nullable=False)
     created = Column(Date, default=_get_date())
     updated = Column(Date, default=_get_date(), onupdate=_get_date())
-    # TODO: metadata field
-
-    user_id = Column(Integer, ForeignKey(f"{constants.USERS_TABLE}.id"))
+    meta_data = Column(types.PickleType)
+    user_id = Column(String(32), ForeignKey(f"{constants.USERS_TABLE}.id"))
     user = relationship("User", back_populates="favorite_things")
 
     def __init__(self, user_id: str, title, ranking: int, category: str, description: str = None):
