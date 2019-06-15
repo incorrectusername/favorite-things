@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, ForeignKey, String, Date, Index, types
+from sqlalchemy import Column, Integer, ForeignKey, String, Index, types, DateTime
 from sqlalchemy.orm import relationship
 
 from app.utils import constants
@@ -13,14 +13,13 @@ def _get_date():
 
 class FavoriteThings(Base):
     __tablename__ = constants.FAVORITE_THINGS_TABLE
-    sr = Column(Integer, autoincrement=True)
     id = Column(String(32), primary_key=True)
     title = Column(String(32), nullable=False)
     description = Column(String(128), nullable=True)
     ranking = Column(Integer, nullable=False)
     category = Column(String(32), nullable=False)
-    created = Column(Date, default=_get_date())
-    updated = Column(Date, default=_get_date(), onupdate=_get_date())
+    created = Column(DateTime, default=_get_date())
+    updated = Column(DateTime, default=_get_date(), onupdate=_get_date())
     meta_data = Column(types.PickleType)
     user_id = Column(String(32), ForeignKey(f"{constants.USERS_TABLE}.id"))
     user = relationship("User", back_populates="favorite_things")
