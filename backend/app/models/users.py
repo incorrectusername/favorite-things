@@ -6,7 +6,6 @@ from . import Base
 
 
 class User(Base):
-    sr = Column(Integer, autoincrement=True)
     id = Column(String(32), primary_key=True)
     email = Column(String(32), unique=True)
     password = Column(String(32))
@@ -21,7 +20,6 @@ class User(Base):
 
 
 class FavoriteCategory(Base):
-    sr = Column(Integer, autoincrement=True)
     id = Column(String(32), primary_key=True)
     category = Column(String(32), nullable=False)
     user_id = Column(String(32), ForeignKey(f"{constants.USERS_TABLE}.id"))

@@ -7,7 +7,6 @@ from . import Base
 
 class Audit(Base):
     __tablename__ = constants.AUDIT_TABLE
-    sr = Column(Integer, autoincrement=True)
     id = Column(String(32), primary_key=True)
     user_id = Column(String(32), ForeignKey(f"{constants.USERS_TABLE}.id"))
     user = relationship("User")
