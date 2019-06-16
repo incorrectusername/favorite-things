@@ -77,7 +77,7 @@ def edit_favorite_thing(user_id, favorite_id):
         }
         favorite = core.update_favorite_thing(user_id, favorite_id, updates)
 
-        resp = Response(json.dumps({"favorite": favorite}), status=200, mimetype='application/json')
+        resp = Response(json.dumps({"favorite": favorite}, default=str), status=200, mimetype='application/json')
     except Exception as ex:
         log.exception(ex)
         resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
@@ -87,11 +87,27 @@ def edit_favorite_thing(user_id, favorite_id):
 @favorite_things.route("/favorites/user/<user_id>", methods=['GET'])
 def get_favorite_things(user_id):
     try:
+        category = request.args.get("category")
+        if category:
+            log.info(f"Get favorite items of category:{category} for user:{user_id}")
+            favorites = service.get_favorite_things_of_user_by_category(user_id, category)
+        else:
+            log.info(f"Get all favorite items for user:{user_id}")
+            favorites = core.get_all_favorite_items(user_id)
 
-        log.info(f"Get all favorite items for user:{user_id}")
-        favorites = core.get_all_favorite_items(user_id)
+        resp = Response(json.dumps({"favorites": favorites}, default=str), status=200, mimetype='application/json')
+    except Exception as ex:
+        log.exception(ex)
+        resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
+    return resp
 
-        resp = Response(json.dumps({"favorites": favorites}), status=200, mimetype='application/json')
+
+@favorite_things.route("/favorites/category/user/<user_id>", methods=['GET'])
+def get_favorite_categories(user_id):
+    try:
+        log.info(f"get all favorite categories of user:{user_id}")
+        categories = core.get_categories_of_a_user(user_id)
+        resp = Response(json.dumps({"categories": categories}, default=str), status=200, mimetype='application/json')
     except Exception as ex:
         log.exception(ex)
         resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')

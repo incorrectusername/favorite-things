@@ -1,6 +1,7 @@
 from uuid import uuid1
 
 from sqlalchemy import and_
+from sqlalchemy.orm import class_mapper
 from sqlalchemy.sql import exists
 
 from app import log
@@ -8,6 +9,14 @@ from app.models import session_scope
 from app.models.audit import Audit
 from app.models.favorites import FavoriteThings
 from app.models.users import User, FavoriteCategory
+
+
+def serialize(model):
+    """Transforms a model into a dictionary which can be dumped to JSON."""
+    # first we get the names of all the columns on your model
+    columns = [c.key for c in class_mapper(model.__class__).columns]
+    # then we return their values in a dict
+    return dict((c, getattr(model, c)) for c in columns)
 
 
 def make_user_from_object(user):
@@ -73,7 +82,7 @@ def save_new_favorite_thing(user_id, title: str, ranking: int, category: str, de
         favorite_thing = FavoriteThings(user_id=user_id, title=title, ranking=_ranking, category=category,
                                         description=description)
         favorite_thing.id = favorite_thing_id
-        if (category,) not in get_categories_of_a_user(user_id):
+        if category not in get_categories_of_a_user(user_id):
             log.debug(f"creating new category:{category} for user:{user_id}")
             create_a_new_category_for_a_user(user_id, category)
         db_session.add(favorite_thing)
@@ -125,7 +134,7 @@ def update_favorite_thing(user_id: str, favorite_id: str, favorite_thing: dict):
         db_session.query(FavoriteThings).filter(FavoriteThings.id == favorite_id).update(updates)
 
     with session_scope() as db_session:
-        return make_favorite_thing_from_object(db_session.query(FavoriteThings).get(favorite_id))
+        return serialize(db_session.query(FavoriteThings).get(favorite_id))
 
 
 def get_favorite_thing_by_id(fav_id):
@@ -142,8 +151,8 @@ def create_a_new_category_for_a_user(user_id, category):
 
 def get_categories_of_a_user(user_id):
     with session_scope() as db_session:
-        return db_session.query(FavoriteCategory.category).filter(
-            FavoriteCategory.user_id == user_id).all()
+        return [category[0] for category in db_session.query(FavoriteCategory.category).filter(
+            FavoriteCategory.user_id == user_id).all()]
 
 
 def rank_present_for_category(rank: int, category: str):
@@ -203,16 +212,20 @@ def update_rank_of_fav_thing_for_a_given_category(user_id: str, favorite_thing_i
 def get_all_favorite_items(user_id: str):
     with session_scope() as db_session:
         return [
-            make_favorite_thing_from_object(item)
+            serialize(item)
             for item in db_session.query(FavoriteThings).filter(FavoriteThings.user_id == user_id).all()]
 
 
-def make_favorite_thing_from_object(item):
-    return {
-        "title": item.title,
-        "id": item.id,
-        "description": item.description,
-        "category": item.category,
-        "meta_data": item.meta_data,
-        "ranking": item.ranking
-    }
+def get_all_favorite_items_of_category(user_id: str, category: str):
+    with session_scope() as db_session:
+        return [
+            serialize(item)
+            for item in db_session.query(FavoriteThings).filter(FavoriteThings.user_id == user_id,
+                                                                FavoriteThings.category == category).all()]
+
+
+def get_all_categories_of_user(user_id):
+    with session_scope() as db_session:
+        return [
+            serialize(item)
+            for item in db_session.query(FavoriteCategory).filter(FavoriteCategory.user_id == user_id).all()]
