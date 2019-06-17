@@ -112,3 +112,20 @@ def get_favorite_categories(user_id):
         log.exception(ex)
         resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
     return resp
+
+
+@favorite_things.route("/favorites/category/user/<user_id>", methods=['POST'])
+def save_new_favorite_categories(user_id):
+    try:
+        category = request.json["category"].lower()
+        log.info(f"Save new favorite category:{category} of user:{user_id}")
+
+        if category not in core.get_all_favorite_items(user_id):
+            core.create_a_new_category_for_a_user(user_id, category)
+
+        categories = core.get_categories_of_a_user(user_id)
+        resp = Response(json.dumps({"categories": categories}, default=str), status=200, mimetype='application/json')
+    except Exception as ex:
+        log.exception(ex)
+        resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
+    return resp
