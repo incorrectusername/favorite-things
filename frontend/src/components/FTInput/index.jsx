@@ -1,4 +1,5 @@
 import React from "react";
+import uuidv1 from "uuid/v1";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { connect } from "react-redux";
 import CreatableSelect from "react-select/creatable";
@@ -9,6 +10,8 @@ import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
+
+import { firstTimeAddItem } from "../../utils/helpers";
 
 import * as actionTypes from "../../actions/actionTypes";
 import NumberFormatCustom from "../NumberFormat";
@@ -43,19 +46,23 @@ class FTInput extends React.Component {
       title: null,
       description: null,
       userMsg: null,
-      selectOptions: [],
       selectValue: undefined,
       isLoadingSelect: false,
-      ranking: 0
+      ranking: 1
     };
   }
   handleChange = name => event => {
     this.setState({ [name]: event.target.value, userMsg: null });
   };
 
+  /**
+   * Check if all the fields are present.
+   * update all the items in a given category if new item to be inserted is somewhere in
+   * the between and not the lasr
+   */
   onClickSave = () => {
-    const { title, description, selectValue } = this.state;
-    const { dispatch } = this.props;
+    const { title, description, selectValue, ranking } = this.state;
+    const { dispatch, favoriteThings } = this.props;
     if (
       title === null ||
       title === "" ||
@@ -66,7 +73,6 @@ class FTInput extends React.Component {
       });
       return false;
     }
-    console.log(selectValue);
     if (selectValue === undefined) {
       this.setState({
         userMsg: "Favorite item must have a category"
@@ -74,14 +80,37 @@ class FTInput extends React.Component {
       return false;
     }
 
-    dispatch({
-      type: actionTypes.ADD_FAVORITE_THING,
-      payload: {
-        title,
-        description,
-        category: selectValue.value
-      }
-    });
+    let actualRank = ranking;
+    const newTempId = uuidv1();
+
+    const totalItems =
+      favoriteThings.filter(favThing => favThing.category === selectValue.value)
+        .length + 1;
+
+    if (ranking > totalItems) {
+      actualRank = totalItems;
+    }
+
+    //TODO: make network call to save a item
+    const item = {
+      title,
+      description,
+      category: selectValue.value,
+      ranking: actualRank,
+      id: newTempId
+    };
+    if (ranking <= actualRank) {
+      const updateThings = firstTimeAddItem(favoriteThings, item);
+      dispatch({
+        type: actionTypes.REPLACE_FAVORITE_THINGS,
+        payload: updateThings
+      });
+    } else {
+      dispatch({
+        type: actionTypes.ADD_FAVORITE_THING,
+        payload: item
+      });
+    }
 
     this.setState({
       title: null,
@@ -91,23 +120,19 @@ class FTInput extends React.Component {
   };
   createOption = label => ({
     label,
-    value: label.toLowerCase().replace(/\W/g, "")
+    value: label.toLowerCase()
   });
   handleSelectChange = (newValue, actionMeta) => {
-    console.group("Value Changed");
-    console.log(newValue);
-    console.log(`action: ${actionMeta.action}`);
-    console.groupEnd();
-    this.setState({ value: newValue });
+    this.setState({ selectValue: newValue });
   };
   handleSelectCreate = inputValue => {
     this.setState({ isLoading: true });
     const { dispatch } = this.props;
 
+    // TODO: Make a network call to save new category
     console.group("Option created");
     console.log("Wait a moment...");
     setTimeout(() => {
-      const { selectOptions } = this.state;
       const newOption = this.createOption(inputValue);
       console.log(newOption);
       console.groupEnd();
@@ -119,23 +144,28 @@ class FTInput extends React.Component {
 
       this.setState({
         isLoadingSelect: false,
-        selectOptions: [...selectOptions, newOption],
         selectValue: newOption
       });
     }, 1000);
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, categories, favoriteThings } = this.props;
     const {
       description,
       title,
       userMsg,
       isLoadingSelect,
-      selectOptions,
-      selectValue,
-      ranking
+      selectValue
     } = this.state;
+
+    const ranking = selectValue
+      ? favoriteThings.filter(
+          favThing => favThing.category === selectValue.value
+        ).length + 1
+      : 1;
+
+    const selectOptions = categories.map(value => this.createOption(value));
     return (
       <Paper className={classes.paper}>
         <CardContent>

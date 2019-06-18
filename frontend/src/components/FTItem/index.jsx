@@ -7,6 +7,8 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Chip from "@material-ui/core/Chip";
 import Tooltip from "@material-ui/core/Tooltip";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Dialog from "@material-ui/core/Dialog";
 
 const styles = theme => ({
   card: {
@@ -31,33 +33,62 @@ const styles = theme => ({
 });
 
 class Item extends React.Component {
+  state = {
+    editing: false
+  };
+
+  editClick = () => {
+    this.setState({
+      editClick: true
+    });
+  };
+
+  handleDialogClose = () => {
+    this.setState({
+      editClick: false
+    });
+  };
+
   render() {
     const { classes, favoriteThing } = this.props;
+    const { editClick } = this.state;
     return (
-      <Card className={classes.card}>
-        <CardContent>
-          <Typography variant="h5" component="h2">
-            {favoriteThing.title} + "dsfsdg"
-          </Typography>
-          <Typography variant="body2" component="p">
-            {favoriteThing.description} + "----------- ---------- - ---------
-            --------- ---------- ----------- ------------ -------------
-            --------------- -----------"
-          </Typography>
-        </CardContent>
-        <CardActions className={classes.CardActions}>
-          <Tooltip title="category" aria-label="category">
-            <Chip
-              label={favoriteThing.category || "none"}
-              className={classes.chip}
-            />
-          </Tooltip>
-          <Tooltip title="ranking" aria-label="ranking">
-            <Chip label={favoriteThing.ranking || 0} className={classes.chip} />
-          </Tooltip>
-          <Button size="small">Edit</Button>
-        </CardActions>
-      </Card>
+      <>
+        <Dialog
+          onClose={this.handleDialogClose}
+          open={editClick}
+          aria-labelledby="simple-dialog-title"
+        >
+          <DialogTitle id="simple-dialog-title">Set backup account</DialogTitle>
+        </Dialog>
+        <Card className={classes.card}>
+          <CardContent>
+            <Typography variant="h5" component="h2">
+              {favoriteThing.title}
+            </Typography>
+            <Typography variant="body2" component="p">
+              {favoriteThing.description}
+            </Typography>
+          </CardContent>
+          <CardActions className={classes.CardActions}>
+            <Tooltip title="category" aria-label="category">
+              <Chip
+                label={favoriteThing.category || "none"}
+                className={classes.chip}
+              />
+            </Tooltip>
+            <Tooltip title="ranking" aria-label="ranking">
+              <Chip
+                label={favoriteThing.ranking || 0}
+                className={classes.chip}
+              />
+            </Tooltip>
+            <Button size="small" onClick={this.editClick}>
+              Edit
+            </Button>
+          </CardActions>
+        </Card>
+      </>
     );
   }
 }

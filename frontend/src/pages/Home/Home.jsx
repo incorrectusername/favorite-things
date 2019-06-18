@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import uuidv1 from "uuid/v1";
 import { connect } from "react-redux";
 import withStyles from "@material-ui/core/styles/withStyles";
+import Select from "react-select";
 
 import GridList from "@material-ui/core/GridList";
 import GridListTile from "@material-ui/core/GridListTile";
@@ -19,25 +20,57 @@ const styles = theme => ({
   },
   gridList: {
     width: "100%"
+  },
+  select: {
+    maxWidth: 300,
+    padding: 10
   }
 });
 
 class Home extends Component {
   state = {
-    greetMsg: "",
-    extraMsg: undefined
+    category: "All"
   };
 
   componentDidMount = () => {};
 
+  handleChange = (newValue, actionMeta) => {
+    this.setState({
+      category: newValue.value
+    });
+  };
+
   render() {
-    const { classes, favoriteThings } = this.props;
+    const { classes, favoriteThings, categories } = this.props;
+    const { category } = this.state;
+    let favoriteThingsToRender = [...favoriteThings];
+
+    if (category !== "All") {
+      favoriteThingsToRender = favoriteThingsToRender.filter(
+        favThing => favThing.category === category
+      );
+      favoriteThingsToRender.sort((a, b) => a - b);
+    }
+
+    const categoryOptions = [
+      { value: "All", label: "All" },
+      ...categories.map(value => ({ label: value, value }))
+    ];
     return (
       <>
         <FTInput />
+        <Select
+          className={classes.select}
+          classNamePrefix="select"
+          defaultValue={categoryOptions[0]}
+          isSearchable
+          onChange={this.handleChange}
+          name="categories"
+          options={categoryOptions}
+        />
         <div className={classes.root}>
           <GridList cellHeight={160} className={classes.gridList} cols={3}>
-            {[0, ...favoriteThings].map(favoriteThing => (
+            {favoriteThingsToRender.map(favoriteThing => (
               <GridListTile key={uuidv1()} cols={1}>
                 <FTItem favoriteThing={favoriteThing} />
               </GridListTile>
