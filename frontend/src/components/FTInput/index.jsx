@@ -1,22 +1,26 @@
 import React from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
+import { connect } from "react-redux";
+import CreatableSelect from "react-select/creatable";
 
-import Card from "@material-ui/core/Card";
+import Paper from "@material-ui/core/Paper";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 
+import * as actionTypes from "../../actions/actionTypes";
+import NumberFormatCustom from "../NumberFormat";
 const styles = theme => ({
   container: {
     display: "flex",
     flexWrap: "wrap",
     flexDirection: "column"
   },
-  card: {
-    minWidth: 275,
-    maxWidth: 400
+  paper: {
+    maxWidth: 500,
+    margin: "0 auto"
   },
   title: {
     fontSize: 14
@@ -38,7 +42,11 @@ class FTInput extends React.Component {
     this.state = {
       title: null,
       description: null,
-      userMsg: null
+      userMsg: null,
+      selectOptions: [],
+      selectValue: undefined,
+      isLoadingSelect: false,
+      ranking: 0
     };
   }
   handleChange = name => event => {
@@ -46,7 +54,8 @@ class FTInput extends React.Component {
   };
 
   onClickSave = () => {
-    const { title, description } = this.state;
+    const { title, description, selectValue } = this.state;
+    const { dispatch } = this.props;
     if (
       title === null ||
       title === "" ||
@@ -57,13 +66,78 @@ class FTInput extends React.Component {
       });
       return false;
     }
+    console.log(selectValue);
+    if (selectValue === undefined) {
+      this.setState({
+        userMsg: "Favorite item must have a category"
+      });
+      return false;
+    }
+
+    dispatch({
+      type: actionTypes.ADD_FAVORITE_THING,
+      payload: {
+        title,
+        description,
+        category: selectValue.value
+      }
+    });
+
+    this.setState({
+      title: null,
+      description: null,
+      selectValue: undefined
+    });
+  };
+  createOption = label => ({
+    label,
+    value: label.toLowerCase().replace(/\W/g, "")
+  });
+  handleSelectChange = (newValue, actionMeta) => {
+    console.group("Value Changed");
+    console.log(newValue);
+    console.log(`action: ${actionMeta.action}`);
+    console.groupEnd();
+    this.setState({ value: newValue });
+  };
+  handleSelectCreate = inputValue => {
+    this.setState({ isLoading: true });
+    const { dispatch } = this.props;
+
+    console.group("Option created");
+    console.log("Wait a moment...");
+    setTimeout(() => {
+      const { selectOptions } = this.state;
+      const newOption = this.createOption(inputValue);
+      console.log(newOption);
+      console.groupEnd();
+
+      dispatch({
+        type: actionTypes.ADD_FAVORITE_CATEGORY,
+        payload: newOption.value
+      });
+
+      this.setState({
+        isLoadingSelect: false,
+        selectOptions: [...selectOptions, newOption],
+        selectValue: newOption
+      });
+    }, 1000);
   };
 
   render() {
     const { classes } = this.props;
-    const { description, title, userMsg } = this.state;
+    const {
+      description,
+      title,
+      userMsg,
+      isLoadingSelect,
+      selectOptions,
+      selectValue,
+      ranking
+    } = this.state;
     return (
-      <Card className={classes.card}>
+      <Paper className={classes.paper}>
         <CardContent>
           <div className={classes.container}>
             <TextField
@@ -84,6 +158,36 @@ class FTInput extends React.Component {
               className={classes.textField}
               margin="none"
             />
+            <div
+              style={{
+                display: "flex",
+                width: "100%",
+                alignItems: "baseline"
+              }}
+            >
+              <div style={{ width: "100%", paddingRight: "5px", zIndex: 5 }}>
+                <CreatableSelect
+                  placeholder="categories"
+                  isDisabled={isLoadingSelect}
+                  isLoading={isLoadingSelect}
+                  onChange={this.handleSelectChange}
+                  onCreateOption={this.handleSelectCreate}
+                  options={selectOptions}
+                  value={selectValue}
+                />
+              </div>
+              <TextField
+                className={classes.formControl}
+                label="Rank"
+                value={ranking}
+                onChange={this.handleChange("ranking")}
+                id="formatted-numberformat-input"
+                InputProps={{
+                  inputComponent: NumberFormatCustom
+                }}
+              />
+            </div>
+
             {userMsg && (
               <Typography color="textSecondary" gutterBottom>
                 {userMsg}
@@ -101,9 +205,15 @@ class FTInput extends React.Component {
             Save
           </Button>
         </CardActions>
-      </Card>
+      </Paper>
     );
   }
 }
 
-export default withStyles(styles)(FTInput);
+const mapStateToProps = state => ({
+  user: state.User.user,
+  categories: state.Categories.categories,
+  favoriteThings: state.FavoriteThings.favoriteThings
+});
+
+export default withStyles(styles)(connect(mapStateToProps)(FTInput));
