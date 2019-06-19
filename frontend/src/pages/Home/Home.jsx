@@ -4,22 +4,21 @@ import { connect } from "react-redux";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Select from "react-select";
 
-import GridList from "@material-ui/core/GridList";
-import GridListTile from "@material-ui/core/GridListTile";
+import Grid from "@material-ui/core/Grid";
 
 import FTInput from "../../components/FTInput";
 import FTItem from "../../components/FTItem";
 
 const styles = theme => ({
-  root: {
+  root: {},
+  gridList: {
+    width: "100%",
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "space-around",
     backgroundColor: theme.palette.background.paper,
-    marginTop: "20px"
-  },
-  gridList: {
-    width: "100%"
+    marginTop: "20px",
+    flexGrow: 1
   },
   select: {
     maxWidth: 300,
@@ -68,15 +67,15 @@ class Home extends Component {
           name="categories"
           options={categoryOptions}
         />
-        <div className={classes.root}>
-          <GridList cellHeight={160} className={classes.gridList} cols={3}>
-            {favoriteThingsToRender.map(favoriteThing => (
-              <GridListTile key={uuidv1()} cols={1}>
-                <FTItem favoriteThing={favoriteThing} />
-              </GridListTile>
-            ))}
-          </GridList>
-        </div>
+        <Grid container className={classes.root} spacing={2}>
+          <Grid item xs={12}>
+            <Grid container justify="center" spacing={1}>
+              {favoriteThingsToRender.map(favoriteThing => (
+                <FTItem key={uuidv1()} favoriteThing={favoriteThing} />
+              ))}
+            </Grid>
+          </Grid>
+        </Grid>
       </>
     );
   }

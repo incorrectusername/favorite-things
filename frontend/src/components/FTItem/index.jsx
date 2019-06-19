@@ -10,10 +10,17 @@ import Tooltip from "@material-ui/core/Tooltip";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Dialog from "@material-ui/core/Dialog";
 
+import UpdateFTItem from "../UpdateFTItem";
+
 const styles = theme => ({
   card: {
     minWidth: 275,
-    maxWidth: 400
+    maxWidth: 400,
+    padding: theme.spacing(1),
+    margin: theme.spacing(1, 1),
+    border: "1px solid transparent",
+    borderRadius: "8px",
+    borderColor: "#e0e0e0"
   },
   bullet: {
     display: "inline-block",
@@ -39,27 +46,51 @@ class Item extends React.Component {
 
   editClick = () => {
     this.setState({
-      editClick: true
+      editing: true
     });
   };
 
   handleDialogClose = () => {
     this.setState({
-      editClick: false
+      editing: false
     });
   };
 
+  createOption = label => ({
+    label,
+    value: label.toLowerCase()
+  });
+
   render() {
     const { classes, favoriteThing } = this.props;
-    const { editClick } = this.state;
+    const { editing } = this.state;
     return (
       <>
         <Dialog
           onClose={this.handleDialogClose}
-          open={editClick}
+          open={editing}
           aria-labelledby="simple-dialog-title"
         >
-          <DialogTitle id="simple-dialog-title">Set backup account</DialogTitle>
+          <DialogTitle id="simple-dialog-title">
+            <div>
+              Edit Favorite Item
+              <br />
+              <Typography variant="caption" display="block" gutterBottom>
+                <span>
+                  updated:
+                  {new Date(favoriteThing.updated).toDateString() +
+                    ", " +
+                    new Date(favoriteThing.updated).toLocaleTimeString()}
+                </span>
+              </Typography>
+            </div>
+          </DialogTitle>
+          <UpdateFTItem
+            title={favoriteThing.title}
+            description={favoriteThing.description}
+            selectValue={this.createOption(favoriteThing.category)}
+            ranking={favoriteThing.ranking}
+          />
         </Dialog>
         <Card className={classes.card}>
           <CardContent>
@@ -75,12 +106,16 @@ class Item extends React.Component {
               <Chip
                 label={favoriteThing.category || "none"}
                 className={classes.chip}
+                variant="outlined"
+                color="primary"
               />
             </Tooltip>
             <Tooltip title="ranking" aria-label="ranking">
               <Chip
                 label={favoriteThing.ranking || 0}
                 className={classes.chip}
+                variant="outlined"
+                color="primary"
               />
             </Tooltip>
             <Button size="small" onClick={this.editClick}>

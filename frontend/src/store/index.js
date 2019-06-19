@@ -30,4 +30,159 @@ store.dispatch({
   type: "LOGIN",
   payload: { email: "sfaf", uid: "da" }
 });
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title",
+    description: null,
+    ranking: 1,
+    id: "1",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title 2",
+    description: "description",
+    ranking: 2,
+    id: "2",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title",
+    description: null,
+    ranking: 1,
+    id: "1",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title 2",
+    description: "description",
+    ranking: 2,
+    id: "2",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title",
+    description: null,
+    ranking: 1,
+    id: "1",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title 2",
+    description: "description",
+    ranking: 2,
+    id: "2",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title",
+    description: null,
+    ranking: 1,
+    id: "1",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title 2",
+    description: "description",
+    ranking: 2,
+    id: "2",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title",
+    description: null,
+    ranking: 1,
+    id: "1",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title 2",
+    description: "description",
+    ranking: 2,
+    id: "2",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title",
+    description: null,
+    ranking: 1,
+    id: "1",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
+store.dispatch({
+  type: "ADD_FAVORITE_THING",
+  payload: {
+    title: "my title 2",
+    description: "description sdfkl",
+    ranking: 2,
+    id: "2",
+    category: "food",
+    created: Date.now(),
+    updated: Date.now()
+  }
+});
+
 export default configureStore;
