@@ -229,3 +229,11 @@ def get_all_categories_of_user(user_id):
         return [
             serialize(item)
             for item in db_session.query(FavoriteCategory).filter(FavoriteCategory.user_id == user_id).all()]
+
+
+def get_logs_of_favorite_thing(user_id: str, favorite_thing_id: str):
+    with session_scope() as db_session:
+        return [serialize(_log)
+                for _log in db_session.query(Audit).filter(Audit.user_id == user_id,
+                                                           Audit.favorite_thing_id == favorite_thing_id).all()
+                ]

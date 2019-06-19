@@ -48,7 +48,7 @@ def create_new_favorite_thing():
 
         log.info(f"creating new favorite thing for user:{user_id}")
 
-        core.save_new_favorite_thing(user_id, title, ranking, category, description)
+        core.save_new_favorite_thing(user_id, title, ranking, category.lower(), description)
 
         resp = Response(json.dumps({"success": True}), status=200, mimetype='application/json')
     except Exception as ex:
@@ -125,6 +125,18 @@ def save_new_favorite_categories(user_id):
 
         categories = core.get_categories_of_a_user(user_id)
         resp = Response(json.dumps({"categories": categories}, default=str), status=200, mimetype='application/json')
+    except Exception as ex:
+        log.exception(ex)
+        resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
+    return resp
+
+
+@favorite_things.route("/logs/user/<user_id>/favorite/<favorite_id>", methods=["GET"])
+def get_audit_logs(user_id: str, favorite_id: str):
+    try:
+        log.info(f"Get all log related to favorite item:{favorite_id} for user:{user_id}")
+        logs = core.get_logs_of_favorite_thing(user_id, favorite_id)
+        resp = Response(json.dumps({"logs": logs}, default=str), status=200, mimetype='application/json')
     except Exception as ex:
         log.exception(ex)
         resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
