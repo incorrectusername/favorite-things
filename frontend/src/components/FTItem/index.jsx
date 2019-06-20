@@ -86,10 +86,12 @@ class Item extends React.Component {
             </div>
           </DialogTitle>
           <UpdateFTItem
+            id={favoriteThing.id}
             title={favoriteThing.title}
             description={favoriteThing.description}
             selectValue={this.createOption(favoriteThing.category)}
             ranking={favoriteThing.ranking}
+            handleDialogClose={this.handleDialogClose}
           />
         </Dialog>
         <Card className={classes.card}>

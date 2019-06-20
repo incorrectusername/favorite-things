@@ -12,6 +12,16 @@ export const updateRankings = (
     favThing => favThing.category !== category
   );
 
+  let fIdx;
+  for (let i = 0; i < favThings.length; i++) {
+    if (favThings[i].id === id) {
+      fIdx = i;
+    }
+  }
+
+  const favThing = favThings.splice(fIdx, 1)[0];
+  favThing.ranking = newRank;
+
   for (let i = 0; i < favThings.length; i++) {
     if (newRank > oldRank) {
       if (favThings[i].ranking > oldRank && favThings.ranking <= newRank) {
@@ -21,12 +31,10 @@ export const updateRankings = (
       if (favThings[i].ranking < oldRank && favThings[i].ranking >= newRank) {
         favThings[i].ranking += 1;
       }
-    } else if (favThings[i].id === id) {
-      favThings[i].ranking = newRank;
     }
   }
 
-  return [...restThings, ...favoriteThings];
+  return [...restThings, ...favThings, favThing];
 };
 
 /**
@@ -56,7 +64,7 @@ export const updateRankingBecauseCategoryChanged = (
     favThing => favThing.category === oldCategory
   );
   const newCatFavThings = favoriteThings.filter(
-    favThing => favThing.category !== newCategory
+    favThing => favThing.category === newCategory
   );
   const restThings = favoriteThings.filter(
     favThing =>
@@ -69,13 +77,19 @@ export const updateRankingBecauseCategoryChanged = (
     if (oldCatFavThings[i].id === id) {
       favThingChangedCategoryIdx = i;
     }
-    oldCatFavThings[i].ranking -= 1;
   }
   favThingChangedCategory = oldCatFavThings.splice(
     favThingChangedCategoryIdx,
     1
-  );
+  )[0];
 
+  for (let i = 0; i < oldCatFavThings.length; i++) {
+    if (oldCatFavThings[i].ranking >= favThingChangedCategory.ranking) {
+      oldCatFavThings[i].ranking -= 1;
+    }
+  }
+
+  favThingChangedCategory.ranking = currentRank;
   favThingChangedCategory.category = newCategory;
   for (let i = 0; i < newCatFavThings.length; i++) {
     if (newCatFavThings[i].ranking >= currentRank) {
@@ -89,4 +103,14 @@ export const updateRankingBecauseCategoryChanged = (
     ...newCatFavThings,
     favThingChangedCategory
   ];
+};
+
+export const getCookie = name => {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length === 2)
+    return parts
+      .pop()
+      .split(";")
+      .shift();
 };

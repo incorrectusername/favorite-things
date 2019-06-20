@@ -1,9 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Route, Redirect } from "react-router-dom";
-import { isNil } from "../../constants/utilityFunctions";
 import * as routes from "../../constants/routes";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import { getCookie } from "../../utils/helpers";
 
 const PrivateRoute = ({
   component: Component,
@@ -11,12 +10,11 @@ const PrivateRoute = ({
   user,
   ...rest
 }) => {
-  console.log(!isNil(user));
   return (
     <Route
       {...rest}
       render={props =>
-        !isNil(user) && !isNil(user.uid) ? (
+        parseInt(getCookie("loggedIn")) === 1 ? (
           <Component {...props} />
         ) : (
           <Redirect

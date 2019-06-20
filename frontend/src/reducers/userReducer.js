@@ -11,6 +11,9 @@ const user = (state = INITIAL_STATE, action) => {
         user: { ...action.payload }
       };
     case LOG_OUT:
+      document.cookie =
+        "loggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
       return {
         ...state,
         ...INITIAL_STATE

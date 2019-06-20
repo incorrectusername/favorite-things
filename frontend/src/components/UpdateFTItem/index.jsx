@@ -14,12 +14,13 @@ import Drawer from "@material-ui/core/Drawer";
 import List from "@material-ui/core/List";
 import Divider from "@material-ui/core/Divider";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import InboxIcon from "@material-ui/icons/MoveToInbox";
-import MailIcon from "@material-ui/icons/Mail";
 
-import { firstTimeAddItem } from "../../utils/helpers";
+import {
+  firstTimeAddItem,
+  updateRankingBecauseCategoryChanged,
+  updateRankings
+} from "../../utils/helpers";
 
 import * as actionTypes from "../../actions/actionTypes";
 import NumberFormatCustom from "../NumberFormat";
@@ -47,30 +48,40 @@ const styles = theme => ({
   }
 });
 
-const SideList = props => {
-  const { classes } = props;
+const logs = [
+  { text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit." },
+  {
+    text:
+      "Donec lobortis nibh non nisi ultricies ullamcorper rhoncus id tellus."
+  },
+  { text: "Aliquam nec enim vel leo rhoncus ultricies quis congue massa." },
+  {
+    text:
+      "Fusce molestie tortor sit amet metus rutrum, vel placerat metus aliquet."
+  },
+  { text: "Fusce porttitor arcu in libero blandit, ut viverra nisl finibus." },
+  { text: "Phasellus luctus libero non purus cursus tristique." },
+  { text: "Nam in nulla eget nulla fermentum vestibulum." },
+  { text: "Ut sit amet lacus id augue hendrerit dignissim." }
+];
+
+const LogList = props => {
+  const { classes, logs } = props;
   return (
     <div className={classes.list} role="presentation">
-      <List>
-        {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>
-              {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-            </ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {["All mail", "Trash", "Spam"].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>
-              {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-            </ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
+      <List
+        style={{
+          maxWidth: "350px"
+        }}
+      >
+        {logs.map(log => {
+          return (
+            <ListItem button key={log.text}>
+              <ListItemText primary={log.text} />
+              <Divider />
+            </ListItem>
+          );
+        })}
       </List>
     </div>
   );
@@ -130,7 +141,6 @@ class UpdateFTInput extends React.Component {
     }
 
     let actualRank = ranking;
-    const newTempId = uuidv1();
 
     const totalItems =
       favoriteThings.filter(favThing => favThing.category === selectValue.value)
@@ -140,32 +150,48 @@ class UpdateFTInput extends React.Component {
       actualRank = totalItems;
     }
 
-    //TODO: make network call to save a item
-    const item = {
-      title,
-      description,
-      category: selectValue.value,
-      ranking: actualRank,
-      id: newTempId
-    };
-    if (ranking <= actualRank) {
-      const updateThings = firstTimeAddItem(favoriteThings, item);
-      dispatch({
+    console.log(
+      this.props.ranking,
+      parseInt(actualRank),
+      this.props.selectValue.value,
+      selectValue.value
+    );
+    if (this.props.selectValue.value !== selectValue.value) {
+      //user changed ranking and category both
+      const allFavThings = updateRankingBecauseCategoryChanged(
+        this.props.favoriteThings,
+        this.props.id,
+        parseInt(actualRank),
+        this.props.selectValue.value,
+        selectValue.value
+      );
+
+      this.props.dispatch({
         type: actionTypes.REPLACE_FAVORITE_THINGS,
-        payload: updateThings
+        payload: allFavThings
       });
-    } else {
-      dispatch({
-        type: actionTypes.ADD_FAVORITE_THING,
-        payload: item
+    } else if (
+      this.props.ranking !== actualRank &&
+      this.props.selectValue.value === selectValue.value
+    ) {
+      //only ranking changed
+      const allFavThings = updateRankings(
+        this.props.favoriteThings,
+        this.props.id,
+        parseInt(actualRank),
+        parseInt(this.props.ranking),
+        this.props.selectValue.value
+      );
+
+      this.props.dispatch({
+        type: actionTypes.REPLACE_FAVORITE_THINGS,
+        payload: allFavThings
       });
     }
 
-    this.setState({
-      title: null,
-      description: null,
-      selectValue: undefined
-    });
+    //TODO: make network call to update an item
+
+    this.props.handleDialogClose();
   };
   createOption = label => ({
     label,
@@ -270,7 +296,7 @@ class UpdateFTInput extends React.Component {
             )}
           </div>
           <Drawer anchor="right" open={openDrawer} onClose={this.closeDrawer}>
-            <SideList classes={classes} />
+            <LogList classes={classes} logs={logs} />
           </Drawer>
         </CardContent>
         <CardActions>

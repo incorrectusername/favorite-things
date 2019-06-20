@@ -1,5 +1,6 @@
 import React from "react";
 import uuidv1 from "uuid/v1";
+import axios from "axios";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { connect } from "react-redux";
 import CreatableSelect from "react-select/creatable";
@@ -14,6 +15,7 @@ import Typography from "@material-ui/core/Typography";
 import { firstTimeAddItem } from "../../utils/helpers";
 
 import * as actionTypes from "../../actions/actionTypes";
+import { BACKEND_SERVER } from "../../constants/consts";
 import NumberFormatCustom from "../NumberFormat";
 const styles = theme => ({
   container: {
@@ -51,6 +53,12 @@ class FTInput extends React.Component {
       ranking: 1
     };
   }
+
+  componentDidMount() {
+    const { user } = this.props;
+    axios.get(BACKEND_SERVER + "/api/v1/favorites/category/user/" + user.id);
+  }
+
   handleChange = name => event => {
     this.setState({ [name]: event.target.value, userMsg: null });
   };
@@ -127,9 +135,21 @@ class FTInput extends React.Component {
   };
   handleSelectCreate = inputValue => {
     this.setState({ isLoading: true });
-    const { dispatch } = this.props;
+    const { dispatch, user } = this.props;
 
-    // TODO: Make a network call to save new category
+    axios
+      .put(`${BACKEND_SERVER}/api/v1/favorites/category/user/${user.id}`, {
+        category: inputValue
+      })
+      .then(resp => resp.data)
+      .then(data => {
+        dispatch({
+          type: actionTypes.REPLACE_ALL_CATEGORIES_WITH_NEW_LIST,
+          payload: data
+        });
+      })
+      .catch(err => this.setState({ err }));
+
     console.group("Option created");
     console.log("Wait a moment...");
     setTimeout(() => {

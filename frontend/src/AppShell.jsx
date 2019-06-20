@@ -5,19 +5,20 @@ import { connect } from "react-redux";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import Drawer from "@material-ui/core/Drawer";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import routes from "./routes";
 import { isNil } from "./constants/utilityFunctions";
 import PrivateRoute from "./common/PrivateRoute/PrivateRoute";
 import uuidv4 from "uuid/v4";
-const drawerWidth = 280;
+import Button from "@material-ui/core/Button";
+
+import { getCookie } from "./utils/helpers";
+import { LOG_OUT } from "./actions/actionTypes";
+const drawerWidth = 0;
 
 const styles = theme => ({
   root: {
@@ -109,6 +110,14 @@ class AppShell extends React.Component {
     this.setState({ open: false });
   };
 
+  logoutUser = () => {
+    this.props.dispatch({
+      type: LOG_OUT
+    });
+
+    window.location.href = "/login";
+  };
+
   render() {
     const { classes } = this.props;
 
@@ -147,35 +156,14 @@ class AppShell extends React.Component {
               >
                 Favorite Things
               </Typography>
-              {/* <UserAvatar /> */}
+              {getCookie("loggedIn") && parseInt(getCookie("loggedIn")) === 1 && (
+                <Button color="inherit" onClick={this.logoutUser}>
+                  Log out
+                </Button>
+              )}
             </Toolbar>
           </AppBar>
-          <Drawer
-            variant="permanent"
-            classes={{
-              paper: classNames(
-                classes.drawerPaper,
-                !this.state.open && classes.drawerPaperClose
-              )
-            }}
-            open={this.state.open}
-          >
-            <div className={classes.toolbarIcon}>
-              <img
-                src={process.env.PUBLIC_URL + "/logo.png"}
-                width="50"
-                height="50"
-                style={{
-                  margin: "0 auto"
-                }}
-                alt="favorite thing"
-              />
-              <IconButton onClick={this.handleDrawerClose}>
-                <ChevronLeftIcon />
-              </IconButton>
-            </div>
-            <Divider />
-          </Drawer>
+
           <main className={classes.content}>
             <div className={classes.appBarSpacer} />
             <Switch>

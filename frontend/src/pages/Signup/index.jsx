@@ -17,7 +17,6 @@ import withStyles from "@material-ui/core/styles/withStyles";
 
 import { BACKEND_SERVER } from "../../constants/consts";
 import * as actionTypes from "../../actions/actionTypes";
-import { SIGN_UP } from "../../constants/routes";
 import { getCookie } from "../../utils/helpers";
 const styles = theme => ({
   main: {
@@ -52,7 +51,7 @@ const styles = theme => ({
   }
 });
 
-class SignIn extends React.Component {
+class SignUp extends React.Component {
   state = {
     email: "",
     password: "",
@@ -68,7 +67,7 @@ class SignIn extends React.Component {
     const { email, password } = this.state;
 
     axios
-      .post(BACKEND_SERVER + "/api/v1/login", {
+      .post(BACKEND_SERVER + "/api/v1/signup", {
         email,
         password
       })
@@ -88,7 +87,7 @@ class SignIn extends React.Component {
       .catch(err => this.setState({ err }));
   };
   render() {
-    const { classes } = this.props;
+    const { classes, user } = this.props;
     const { email, password, err } = this.state;
     if (getCookie("loggedIn") && parseInt(getCookie("loggedIn")) === 1) {
       return <Redirect to="/" />;
@@ -101,7 +100,7 @@ class SignIn extends React.Component {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            Sign up
           </Typography>
           <form className={classes.form} onSubmit={this.handleSubmit}>
             <FormControl margin="normal" required fullWidth>
@@ -133,24 +132,10 @@ class SignIn extends React.Component {
               color="primary"
               className={classes.submit}
             >
-              Sign in
-            </Button>
-            <Button
-              type="button"
-              fullWidth
-              variant="contained"
-              color="primary"
-              className={classes.submit}
-              onClick={() => {
-                window.location.href = SIGN_UP;
-              }}
-            >
-              Sign up instead?
+              Sign up
             </Button>
             {err && (
-              <Typography component="span">
-                Incorrect username or password
-              </Typography>
+              <Typography component="span">user already exists</Typography>
             )}
           </form>
         </Paper>
@@ -163,8 +148,8 @@ const mapStateToProps = state => ({
   user: state.User.user
 });
 
-SignIn.propTypes = {
+SignUp.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default connect(mapStateToProps)(withStyles(styles)(SignIn));
+export default connect(mapStateToProps)(withStyles(styles)(SignUp));
