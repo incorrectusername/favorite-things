@@ -37,6 +37,19 @@ def login_user():
     return resp
 
 
+@favorite_things.route("/user/<user_id>", methods=['GET'])
+def get_user_by_id(user_id):
+    try:
+        log.info("GET user by id")
+        user = core.get_user_by_id(user_id)
+        resp = Response(json.dumps({"user": user}), status=200, mimetype='application/json')
+    except Exception as ex:
+        log.exception(ex)
+        resp = Response(json.dumps({"message": "No such user. "}), status=400,
+                        mimetype='application/json')
+    return resp
+
+
 @favorite_things.route("/favorite", methods=['POST'])
 def create_new_favorite_thing():
     try:
@@ -48,9 +61,8 @@ def create_new_favorite_thing():
 
         log.info(f"creating new favorite thing for user:{user_id}")
 
-        core.save_new_favorite_thing(user_id, title, ranking, category.lower(), description)
-
-        resp = Response(json.dumps({"success": True}), status=200, mimetype='application/json')
+        item = core.save_new_favorite_thing(user_id, title, ranking, category.lower(), description)
+        resp = Response(json.dumps(item, default=str), status=200, mimetype='application/json')
     except Exception as ex:
         log.exception(ex)
         resp = Response(json.dumps(getattr(ex, "args", ex)), status=400, mimetype='application/json')
@@ -75,6 +87,12 @@ def edit_favorite_thing(user_id, favorite_id):
             "category": category,
             "meta_data": meta_data
         }
+        filtered = {k: v for k, v in updates.items() if v is not None}
+        updates.clear()
+        updates.update(filtered)
+
+        log.debug("Got item to update:{}".format(updates))
+
         favorite = core.update_favorite_thing(user_id, favorite_id, updates)
 
         resp = Response(json.dumps({"favorite": favorite}, default=str), status=200, mimetype='application/json')

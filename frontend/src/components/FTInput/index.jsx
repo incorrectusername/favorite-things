@@ -17,6 +17,7 @@ import { firstTimeAddItem } from "../../utils/helpers";
 import * as actionTypes from "../../actions/actionTypes";
 import { BACKEND_SERVER } from "../../constants/consts";
 import NumberFormatCustom from "../NumberFormat";
+import { isNil } from "../../constants/utilityFunctions";
 const styles = theme => ({
   container: {
     display: "flex",
@@ -38,6 +39,9 @@ const styles = theme => ({
   },
   input: {
     margin: theme.spacing(1)
+  },
+  progress: {
+    margin: theme.spacing(2)
   }
 });
 
@@ -54,11 +58,6 @@ class FTInput extends React.Component {
     };
   }
 
-  componentDidMount() {
-    const { user } = this.props;
-    axios.get(BACKEND_SERVER + "/api/v1/favorites/category/user/" + user.id);
-  }
-
   handleChange = name => event => {
     this.setState({ [name]: event.target.value, userMsg: null });
   };
@@ -70,7 +69,7 @@ class FTInput extends React.Component {
    */
   onClickSave = () => {
     const { title, description, selectValue, ranking } = this.state;
-    const { dispatch, favoriteThings } = this.props;
+    const { dispatch, favoriteThings, user } = this.props;
     if (
       title === null ||
       title === "" ||
@@ -87,6 +86,14 @@ class FTInput extends React.Component {
       });
       return false;
     }
+    if (!isNil(description)) {
+      if (description.trim().length < 10) {
+        this.setState({
+          userMsg: "description should be atleast 10 characters long"
+        });
+        return;
+      }
+    }
 
     let actualRank = ranking;
     const newTempId = uuidv1();
@@ -99,31 +106,36 @@ class FTInput extends React.Component {
       actualRank = totalItems;
     }
 
-    //TODO: make network call to save a item
     const item = {
+      user_id: user.id,
       title,
       description,
       category: selectValue.value,
       ranking: actualRank,
       id: newTempId
     };
-    if (ranking <= actualRank) {
-      const updateThings = firstTimeAddItem(favoriteThings, item);
-      dispatch({
-        type: actionTypes.REPLACE_FAVORITE_THINGS,
-        payload: updateThings
+
+    axios
+      .post(BACKEND_SERVER + "/api/v1/favorite", item)
+      .then(resp => resp.data)
+      .then(favorite => {
+        if (ranking <= actualRank) {
+          const updateThings = firstTimeAddItem(favoriteThings, favorite);
+          dispatch({
+            type: actionTypes.REPLACE_FAVORITE_THINGS,
+            payload: updateThings
+          });
+        } else {
+          dispatch({
+            type: actionTypes.ADD_FAVORITE_THING,
+            payload: favorite
+          });
+        }
       });
-    } else {
-      dispatch({
-        type: actionTypes.ADD_FAVORITE_THING,
-        payload: item
-      });
-    }
 
     this.setState({
       title: null,
-      description: null,
-      selectValue: undefined
+      description: null
     });
   };
   createOption = label => ({
@@ -136,37 +148,25 @@ class FTInput extends React.Component {
   handleSelectCreate = inputValue => {
     this.setState({ isLoading: true });
     const { dispatch, user } = this.props;
+    const newOption = this.createOption(inputValue);
 
     axios
-      .put(`${BACKEND_SERVER}/api/v1/favorites/category/user/${user.id}`, {
+      .post(`${BACKEND_SERVER}/api/v1/favorites/category/user/${user.id}`, {
         category: inputValue
       })
       .then(resp => resp.data)
       .then(data => {
         dispatch({
           type: actionTypes.REPLACE_ALL_CATEGORIES_WITH_NEW_LIST,
-          payload: data
+          payload: data.categories
+        });
+
+        this.setState({
+          isLoadingSelect: false,
+          selectValue: newOption
         });
       })
       .catch(err => this.setState({ err }));
-
-    console.group("Option created");
-    console.log("Wait a moment...");
-    setTimeout(() => {
-      const newOption = this.createOption(inputValue);
-      console.log(newOption);
-      console.groupEnd();
-
-      dispatch({
-        type: actionTypes.ADD_FAVORITE_CATEGORY,
-        payload: newOption.value
-      });
-
-      this.setState({
-        isLoadingSelect: false,
-        selectValue: newOption
-      });
-    }, 1000);
   };
 
   render() {

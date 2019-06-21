@@ -102,6 +102,9 @@ class Item extends React.Component {
             <Typography variant="body2" component="p">
               {favoriteThing.description}
             </Typography>
+            <Typography variant="caption" component="p">
+              created:{new Date(favoriteThing.created).toLocaleDateString()}
+            </Typography>
           </CardContent>
           <CardActions className={classes.CardActions}>
             <Tooltip title="category" aria-label="category">

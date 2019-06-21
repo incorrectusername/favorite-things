@@ -1,5 +1,5 @@
 import React from "react";
-import uuidv1 from "uuid/v1";
+import axios from "axios";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { connect } from "react-redux";
 import CreatableSelect from "react-select/creatable";
@@ -11,19 +11,16 @@ import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import Drawer from "@material-ui/core/Drawer";
-import List from "@material-ui/core/List";
-import Divider from "@material-ui/core/Divider";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
 
+import AuditLogs from "../AuditLogs";
 import {
-  firstTimeAddItem,
   updateRankingBecauseCategoryChanged,
   updateRankings
 } from "../../utils/helpers";
 
 import * as actionTypes from "../../actions/actionTypes";
 import NumberFormatCustom from "../NumberFormat";
+import { BACKEND_SERVER } from "../../constants/consts";
 const styles = theme => ({
   container: {
     display: "flex",
@@ -47,45 +44,6 @@ const styles = theme => ({
     margin: theme.spacing(1)
   }
 });
-
-const logs = [
-  { text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit." },
-  {
-    text:
-      "Donec lobortis nibh non nisi ultricies ullamcorper rhoncus id tellus."
-  },
-  { text: "Aliquam nec enim vel leo rhoncus ultricies quis congue massa." },
-  {
-    text:
-      "Fusce molestie tortor sit amet metus rutrum, vel placerat metus aliquet."
-  },
-  { text: "Fusce porttitor arcu in libero blandit, ut viverra nisl finibus." },
-  { text: "Phasellus luctus libero non purus cursus tristique." },
-  { text: "Nam in nulla eget nulla fermentum vestibulum." },
-  { text: "Ut sit amet lacus id augue hendrerit dignissim." }
-];
-
-const LogList = props => {
-  const { classes, logs } = props;
-  return (
-    <div className={classes.list} role="presentation">
-      <List
-        style={{
-          maxWidth: "350px"
-        }}
-      >
-        {logs.map(log => {
-          return (
-            <ListItem button key={log.text}>
-              <ListItemText primary={log.text} />
-              <Divider />
-            </ListItem>
-          );
-        })}
-      </List>
-    </div>
-  );
-};
 
 class UpdateFTInput extends React.Component {
   constructor(props) {
@@ -122,7 +80,7 @@ class UpdateFTInput extends React.Component {
    */
   onClickSave = () => {
     const { title, description, selectValue, ranking } = this.state;
-    const { dispatch, favoriteThings } = this.props;
+    const { favoriteThings, user, id: favorite_id } = this.props;
     if (
       title === null ||
       title === "" ||
@@ -150,12 +108,6 @@ class UpdateFTInput extends React.Component {
       actualRank = totalItems;
     }
 
-    console.log(
-      this.props.ranking,
-      parseInt(actualRank),
-      this.props.selectValue.value,
-      selectValue.value
-    );
     if (this.props.selectValue.value !== selectValue.value) {
       //user changed ranking and category both
       const allFavThings = updateRankingBecauseCategoryChanged(
@@ -165,7 +117,6 @@ class UpdateFTInput extends React.Component {
         this.props.selectValue.value,
         selectValue.value
       );
-
       this.props.dispatch({
         type: actionTypes.REPLACE_FAVORITE_THINGS,
         payload: allFavThings
@@ -187,9 +138,39 @@ class UpdateFTInput extends React.Component {
         type: actionTypes.REPLACE_FAVORITE_THINGS,
         payload: allFavThings
       });
+    } else {
+      //other updates
+      for (let i = 0; i < favoriteThings.length; i++) {
+        if (favoriteThings[i].id === favorite_id) {
+          let _updates = {
+            title,
+            description,
+            ranking,
+            category: selectValue.value
+          };
+          Object.keys(_updates).forEach(
+            key => _updates[key] == null && delete _updates[key]
+          );
+
+          favoriteThings[i] = { ...favoriteThings[i], ..._updates };
+          this.props.dispatch({
+            type: actionTypes.REPLACE_FAVORITE_THINGS,
+            payload: favoriteThings
+          });
+          break;
+        }
+      }
     }
 
-    //TODO: make network call to update an item
+    axios.put(
+      `${BACKEND_SERVER}/api/v1/user/${user.id}/favorite/${favorite_id}`,
+      {
+        title,
+        description,
+        ranking,
+        category: selectValue.value
+      }
+    );
 
     this.props.handleDialogClose();
   };
@@ -202,30 +183,26 @@ class UpdateFTInput extends React.Component {
   };
   handleSelectCreate = inputValue => {
     this.setState({ isLoading: true });
-    const { dispatch } = this.props;
+    const { dispatch, user } = this.props;
 
-    // TODO: Make a network call to save new category
-    console.group("Option created");
-    console.log("Wait a moment...");
-    setTimeout(() => {
-      const newOption = this.createOption(inputValue);
-      console.log(newOption);
-      console.groupEnd();
-
-      dispatch({
-        type: actionTypes.ADD_FAVORITE_CATEGORY,
-        payload: newOption.value
+    axios
+      .post(`${BACKEND_SERVER}/api/v1/favorites/category/user/${user.id}`)
+      .then(resp => resp.data)
+      .then(categories => {
+        dispatch({
+          //or just dispatch single category
+          type: actionTypes.REPLACE_ALL_CATEGORIES_WITH_NEW_LIST,
+          payload: categories.categories
+        });
+        this.setState({
+          isLoadingSelect: false,
+          selectValue: this.createOption(inputValue)
+        });
       });
-
-      this.setState({
-        isLoadingSelect: false,
-        selectValue: newOption
-      });
-    }, 1000);
   };
 
   render() {
-    const { classes, categories } = this.props;
+    const { classes, categories, user, id: favorite_id } = this.props;
     const {
       description,
       title,
@@ -295,8 +272,15 @@ class UpdateFTInput extends React.Component {
               </Typography>
             )}
           </div>
-          <Drawer anchor="right" open={openDrawer} onClose={this.closeDrawer}>
-            <LogList classes={classes} logs={logs} />
+          <Drawer
+            anchor="right"
+            open={openDrawer}
+            onClose={this.closeDrawer}
+            style={{
+              minWidth: "250px"
+            }}
+          >
+            <AuditLogs user_id={user.id} favorite_id={favorite_id} />
           </Drawer>
         </CardContent>
         <CardActions>

@@ -15,6 +15,7 @@ def __initialize_app():
 
     flask_server.register_blueprint(favorite_things, url_prefix="/api/v1")
 
+    CORS(flask_server)
     return flask_server
 
 
