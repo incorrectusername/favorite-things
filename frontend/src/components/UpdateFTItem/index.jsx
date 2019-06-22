@@ -98,14 +98,14 @@ class UpdateFTInput extends React.Component {
       return false;
     }
 
-    let actualRank = ranking;
+    let actualRank = parseInt(ranking);
 
     const totalItems =
       favoriteThings.filter(favThing => favThing.category === selectValue.value)
         .length + 1;
 
     if (ranking > totalItems) {
-      actualRank = totalItems;
+      actualRank = parseInt(totalItems);
     }
 
     if (this.props.selectValue.value !== selectValue.value) {
@@ -146,7 +146,8 @@ class UpdateFTInput extends React.Component {
             title,
             description,
             ranking,
-            category: selectValue.value
+            category: selectValue.value,
+            updated: new Date().toISOString()
           };
           Object.keys(_updates).forEach(
             key => _updates[key] == null && delete _updates[key]

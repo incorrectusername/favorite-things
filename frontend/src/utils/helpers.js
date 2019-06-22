@@ -21,10 +21,11 @@ export const updateRankings = (
 
   const favThing = favThings.splice(fIdx, 1)[0];
   favThing.ranking = newRank;
+  favThing.updated = new Date().toISOString();
 
   for (let i = 0; i < favThings.length; i++) {
     if (newRank > oldRank) {
-      if (favThings[i].ranking > oldRank && favThings.ranking <= newRank) {
+      if (favThings[i].ranking > oldRank && favThings[i].ranking <= newRank) {
         favThings[i].ranking -= 1;
       }
     } else if (oldRank > newRank) {
@@ -45,6 +46,7 @@ export const updateRankings = (
  */
 export const firstTimeAddItem = (favoriteThings, item) => {
   const rank = item.ranking;
+  item.updated = new Date().toISOString();
   for (let i = 0; i < favoriteThings.length; i++) {
     if (favoriteThings[i].ranking >= rank) {
       favoriteThings[i].ranking += 1;
@@ -91,6 +93,7 @@ export const updateRankingBecauseCategoryChanged = (
 
   favThingChangedCategory.ranking = currentRank;
   favThingChangedCategory.category = newCategory;
+  favThingChangedCategory.updated = new Date().toISOString();
   for (let i = 0; i < newCatFavThings.length; i++) {
     if (newCatFavThings[i].ranking >= currentRank) {
       newCatFavThings[i].ranking += 1;
