@@ -38,7 +38,7 @@ class Home extends Component {
   };
 
   componentDidMount = () => {
-    const { dispatch, user, categories } = this.props;
+    const { dispatch, user, categories, favoriteThings } = this.props;
     const promises = [Promise.resolve({})];
     if (categories.length === 0) {
       promises.push(
@@ -62,21 +62,26 @@ class Home extends Component {
         axios
           .get(BACKEND_SERVER + "/api/v1/user/" + getCookie("id"))
           .then(resp => resp.data)
-          .then(user => {
+          .then(user =>
             dispatch({
               type: actionTypes.LOGIN,
               payload: user.user
-            });
-            return axios
-              .get(BACKEND_SERVER + "/api/v1/favorites/user/" + user.user.id)
-              .then(resp => resp.data)
-              .then(favorites =>
-                dispatch({
-                  type: actionTypes.REPLACE_FAVORITE_THINGS,
-                  payload: favorites.favorites
-                })
-              );
-          })
+            })
+          )
+      );
+    }
+
+    if (!isNil(favoriteThings) && favoriteThings.length === 0) {
+      promises.push(
+        axios
+          .get(`${BACKEND_SERVER}/api/v1/favorites/user/${getCookie("id")}`)
+          .then(resp => resp.data)
+          .then(favorites =>
+            dispatch({
+              type: actionTypes.REPLACE_FAVORITE_THINGS,
+              payload: favorites.favorites
+            })
+          )
       );
     }
 
