@@ -86,7 +86,7 @@ class SignUp extends React.Component {
       .catch(err => this.setState({ err }));
   };
   render() {
-    const { classes, user } = this.props;
+    const { classes } = this.props;
     const { email, password, err } = this.state;
     if (getCookie("loggedIn") && parseInt(getCookie("loggedIn")) === 1) {
       return <Redirect to="/" />;

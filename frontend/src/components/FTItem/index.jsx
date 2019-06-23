@@ -9,7 +9,11 @@ import Chip from "@material-ui/core/Chip";
 import Tooltip from "@material-ui/core/Tooltip";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Dialog from "@material-ui/core/Dialog";
+import Popover from "@material-ui/core/Popover";
+import IconButton from "@material-ui/core/IconButton";
+import MoreIcon from "@material-ui/icons/MoreVert";
 
+import MetaData from "../MetaData";
 import UpdateFTItem from "../UpdateFTItem";
 
 const styles = theme => ({
@@ -41,7 +45,8 @@ const styles = theme => ({
 
 class Item extends React.Component {
   state = {
-    editing: false
+    editing: false,
+    anchorEl: null
   };
 
   editClick = () => {
@@ -61,9 +66,25 @@ class Item extends React.Component {
     value: label.toLowerCase()
   });
 
+  handlePopOverCLick = event => {
+    this.setState({
+      anchorEl: event.currentTarget
+    });
+  };
+
+  handleAnchorClose = () => {
+    this.setState({
+      anchorEl: null
+    });
+  };
+
   render() {
     const { classes, favoriteThing } = this.props;
-    const { editing } = this.state;
+    const { editing, anchorEl } = this.state;
+    const open = Boolean(anchorEl);
+
+    const id = open ? "simple-popover" : null;
+
     return (
       <>
         <Dialog
@@ -126,6 +147,34 @@ class Item extends React.Component {
             <Button size="small" onClick={this.editClick}>
               Edit
             </Button>
+            <Tooltip title="Edit Metadata" aria-label="Edit Metadata">
+              <IconButton
+                edge="end"
+                color="inherit"
+                onClick={this.handlePopOverCLick}
+              >
+                <MoreIcon />
+              </IconButton>
+            </Tooltip>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={this.handleAnchorClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center"
+              }}
+            >
+              <MetaData
+                metadata={favoriteThing.meta_data || {}}
+                id={favoriteThing.id}
+              />
+            </Popover>
           </CardActions>
         </Card>
       </>
