@@ -13,15 +13,15 @@ def _get_date():
 
 class FavoriteThings(Base):
     __tablename__ = constants.FAVORITE_THINGS_TABLE
-    id = Column(String(32), primary_key=True)
-    title = Column(String(32), nullable=False)
+    id = Column(String(128), primary_key=True)
+    title = Column(String(125), nullable=False)
     description = Column(String(128), nullable=True)
     ranking = Column(Integer, nullable=False)
-    category = Column(String(32), nullable=False)
+    category = Column(String(128), nullable=False)
     created = Column(DateTime, default=_get_date())
     updated = Column(DateTime, default=_get_date(), onupdate=_get_date())
     meta_data = Column(types.PickleType)
-    user_id = Column(String(32), ForeignKey(f"{constants.USERS_TABLE}.id"))
+    user_id = Column(String(128), ForeignKey(f"{constants.USERS_TABLE}.id"))
     user = relationship("User", back_populates="favorite_things")
 
     def __init__(self, user_id: str, title, ranking: int, category: str, description: str = None):

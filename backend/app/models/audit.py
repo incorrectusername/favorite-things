@@ -13,12 +13,12 @@ def _get_date():
 
 class Audit(Base):
     __tablename__ = constants.AUDIT_TABLE
-    id = Column(String(32), primary_key=True)
-    user_id = Column(String(32), ForeignKey(f"{constants.USERS_TABLE}.id"))
+    id = Column(String(128), primary_key=True)
+    user_id = Column(String(128), ForeignKey(f"{constants.USERS_TABLE}.id"))
     user = relationship("User")
-    favorite_thing_id = Column(String(32), ForeignKey(f"{constants.FAVORITE_THINGS_TABLE}.id"))
+    favorite_thing_id = Column(String(128), ForeignKey(f"{constants.FAVORITE_THINGS_TABLE}.id"))
     favorite_thing = relationship("FavoriteThings")
-    text = Column(String(32), nullable=False)
+    text = Column(String(128), nullable=False)
     created = Column(DateTime, default=_get_date())
 
     def __init__(self, user_id: str, favorite_thing_id: str, text: str):
