@@ -1,3 +1,4 @@
+import datetime
 from uuid import uuid1
 
 from sqlalchemy import and_
@@ -58,6 +59,12 @@ def validate_user_credentials(email: str, password: str):
             db_session.query(User).filter(User.email == email, User.password == password).first())
 
 
+def get_user_by_id(user_id: str):
+    with session_scope() as db_session:
+        return make_user_from_object(
+            db_session.query(User).filter(User.id == user_id).first())
+
+
 def create_new_audit_log(user_id: str, favorite_thing_id: str, msg: str):
     audit_log_record = Audit(user_id=user_id, favorite_thing_id=favorite_thing_id, text=msg)
     audit_log_record.id = str(uuid1())
@@ -73,9 +80,12 @@ def save_new_favorite_thing(user_id, title: str, ranking: int, category: str, de
     with session_scope() as db_session:
         # if rank assigned to new favorite thing is already in db
         if ranking is not None and rank_present_for_category(ranking, category):
-            db_session.query(FavoriteThings).filter(
+
+            old_fav_things = db_session.query(FavoriteThings).filter(
                 and_(FavoriteThings.user_id == user_id, FavoriteThings.category == category,
-                     FavoriteThings.ranking >= ranking)).update({"ranking": FavoriteThings.ranking + 1})
+                     FavoriteThings.ranking >= ranking))
+            if old_fav_things:
+                old_fav_things.update({"ranking": FavoriteThings.ranking + 1})
         if ranking is None:
             _ranking = db_session.query(FavoriteThings).filter(FavoriteThings.user_id == user_id,
                                                                FavoriteThings.category == category).count() + 1
@@ -89,6 +99,18 @@ def save_new_favorite_thing(user_id, title: str, ranking: int, category: str, de
 
     create_new_audit_log(user_id=user_id, favorite_thing_id=favorite_thing_id, msg=f"Created new entry: {title}")
 
+    # get by id did not work
+    return {
+        "id": favorite_thing_id,
+        "title": title,
+        "description": description,
+        "ranking": ranking,
+        "category": category,
+        "created": datetime.datetime.now(),
+        "updated": datetime.datetime.now(),
+        "user_id": user_id
+    }
+
 
 def update_favorite_thing(user_id: str, favorite_id: str, favorite_thing: dict):
     with session_scope() as db_session:
@@ -99,21 +121,27 @@ def update_favorite_thing(user_id: str, favorite_id: str, favorite_thing: dict):
 
         old_favorite_thing = db_session.query(FavoriteThings).get(favorite_id)
 
-        audit_log_msg = ""
+        audit_log_msgs = []
 
         updates = {}
         category_updated = False
         if favorite_thing.get("title") and favorite_thing.get("title") != old_favorite_thing.title:
-            audit_log_msg += f"Updated title to {favorite_thing.get('title')}"
+            audit_log_msgs.append(f"Updated title from {old_favorite_thing.title} to {favorite_thing.get('title')}")
             updates["title"] = favorite_thing.get("title")
+
         if favorite_thing.get("description") and favorite_thing.get("description") != old_favorite_thing.description:
-            audit_log_msg += f"Updated description to {favorite_thing.get('description')}"
+            audit_log_msgs.append(f"Updated description to {favorite_thing.get('description')}")
             updates["description"] = favorite_thing.get("description")
+
         if favorite_thing.get("category") and favorite_thing.get("category") != old_favorite_thing.ranking:
-            audit_log_msg += f"updated category to {favorite_thing.get('category')}"
             category_updated = old_favorite_thing.category != favorite_thing.get("category")
+            if category_updated:
+                audit_log_msgs.append(
+                    f"updated category to {favorite_thing.get('category')}")
+
         if favorite_thing.get("ranking"):
-            audit_log_msg += f"Updated ranking to {favorite_thing.get('ranking')}"
+            audit_log_msgs.append(
+                f"Updated ranking from {old_favorite_thing.ranking} to {favorite_thing.get('ranking')}")
             if category_updated:
                 _rank = int(favorite_thing.get("ranking"))
                 new_category_count = db_session.query(FavoriteThings).filter(FavoriteThings.user_id == user_id,
@@ -124,22 +152,24 @@ def update_favorite_thing(user_id: str, favorite_id: str, favorite_thing: dict):
                 update_rank_when_category_is_changed(user_id, favorite_id, _rank, favorite_thing.get('category'))
 
             elif favorite_thing.get("ranking") != old_favorite_thing.ranking:
-                update_rank_of_fav_thing_for_a_given_category(user_id, favorite_id, favorite_thing.get('ranking'),
+                update_rank_of_fav_thing_for_a_given_category(user_id, favorite_id, int(favorite_thing['ranking']),
                                                               old_favorite_thing.category)
 
         if favorite_thing.get("meta_data"):
-            audit_log_msg += f"updated metadata"
+            audit_log_msgs.append(f"updated metadata:{favorite_thing.get('metadata')}")
             updates["meta_data"] = favorite_thing.get("meta_data")
 
         db_session.query(FavoriteThings).filter(FavoriteThings.id == favorite_id).update(updates)
 
+    for msg in audit_log_msgs:
+        create_new_audit_log(user_id, favorite_id, msg)
     with session_scope() as db_session:
         return serialize(db_session.query(FavoriteThings).get(favorite_id))
 
 
 def get_favorite_thing_by_id(fav_id):
     with session_scope() as db_session:
-        return db_session.query(FavoriteThings).filter(FavoriteThings.id == fav_id).first()
+        return serialize(db_session.query(FavoriteThings).filter(FavoriteThings.id == fav_id).first())
 
 
 def create_a_new_category_for_a_user(user_id, category):
@@ -183,7 +213,7 @@ def update_rank_when_category_is_changed(user_id: str, favorite_thing_id: str, n
         old_fav_thing.category = new_category
 
 
-def update_rank_of_fav_thing_for_a_given_category(user_id: str, favorite_thing_id: str, new_rank: str, category: str):
+def update_rank_of_fav_thing_for_a_given_category(user_id: str, favorite_thing_id: str, new_rank: int, category: str):
     with session_scope() as db_session:
         old_fav_thing = db_session.query(FavoriteThings).filter(FavoriteThings.id == favorite_thing_id).first()
         old_title = old_fav_thing.title
@@ -229,3 +259,11 @@ def get_all_categories_of_user(user_id):
         return [
             serialize(item)
             for item in db_session.query(FavoriteCategory).filter(FavoriteCategory.user_id == user_id).all()]
+
+
+def get_logs_of_favorite_thing(user_id: str, favorite_thing_id: str):
+    with session_scope() as db_session:
+        return [serialize(_log)
+                for _log in db_session.query(Audit).filter(Audit.user_id == user_id,
+                                                           Audit.favorite_thing_id == favorite_thing_id).all()
+                ]
