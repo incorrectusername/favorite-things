@@ -5,7 +5,6 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy_utils.functions.database import drop_database
-
 from wsgi import __initialize_app
 
 os.environ["DB_URI"] = "mysql+pymysql://root:root@localhost/favorite"
@@ -71,12 +70,13 @@ def test_create_new_favorite_thing(client):
     resp = client.post("/api/v1/favorite", json=favorite_thing)
 
     assert resp.status_code == 200
-    assert {
-               "user_id": resp.json["user_id"],
-               "title": resp.json["title"],
-               "ranking": resp.json["ranking"],
-               "category": resp.json["category"]
-           } == favorite_thing
+    left_assert = {
+        "user_id": resp.json["user_id"],
+        "title": resp.json["title"],
+        "ranking": resp.json["ranking"],
+        "category": resp.json["category"]
+    }
+    assert left_assert == favorite_thing
 
     fav_resp = client.get(f"/api/v1/favorites/user/{user_id}")
     assert fav_resp.status_code == 200
