@@ -12,9 +12,9 @@ def _get_date():
 
 
 class User(Base):
-    id = Column(String(32), primary_key=True)
-    email = Column(String(32), unique=True)
-    password = Column(String(32))
+    id = Column(String(128), primary_key=True)
+    email = Column(String(128), unique=True)
+    password = Column(String(128))
     favorite_things = relationship("FavoriteThings", back_populates="user")
     created = Column(DateTime, default=_get_date())
 
@@ -27,9 +27,9 @@ class User(Base):
 
 
 class FavoriteCategory(Base):
-    id = Column(String(32), primary_key=True)
-    category = Column(String(32), nullable=False)
-    user_id = Column(String(32), ForeignKey(f"{constants.USERS_TABLE}.id"))
+    id = Column(String(128), primary_key=True)
+    category = Column(String(128), nullable=False)
+    user_id = Column(String(128), ForeignKey(f"{constants.USERS_TABLE}.id"))
     user = relationship("User")
 
     UniqueConstraint(category, user_id)
