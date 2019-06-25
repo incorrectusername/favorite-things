@@ -5,7 +5,8 @@ import { connect } from "react-redux";
 import withStyles from "@material-ui/core/styles/withStyles";
 import Select from "react-select";
 import CircularProgress from "@material-ui/core/CircularProgress";
-
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 
 import FTInput from "../../components/FTInput";
@@ -34,7 +35,8 @@ const styles = theme => ({
 class Home extends Component {
   state = {
     category: "All",
-    showPage: false
+    showPage: false,
+    error: false
   };
 
   componentDidMount = () => {
@@ -85,11 +87,18 @@ class Home extends Component {
       );
     }
 
-    Promise.all(promises).then(() => {
-      this.setState({
-        showPage: true
+    Promise.all(promises)
+      .then(() => {
+        return this.setState({
+          showPage: true,
+          error: false
+        });
+      })
+      .catch(err => {
+        return this.setState({
+          error: true
+        });
       });
-    });
   };
 
   handleChange = (newValue, actionMeta) => {
@@ -100,13 +109,31 @@ class Home extends Component {
 
   render() {
     const { classes, favoriteThings, categories } = this.props;
-    const { category, showPage } = this.state;
+    const { category, showPage, error } = this.state;
     let favoriteThingsToRender = [...favoriteThings];
 
-    if (!showPage) {
+    if (!showPage && !error) {
       return <CircularProgress className={classes.progress} />;
     }
 
+    if (error) {
+      return (
+        <Paper
+          style={{
+            height: "100px",
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "column",
+            justifyContent: "center"
+          }}
+        >
+          <Typography variant="h5" component="h3" style={{ margin: "0 auto" }}>
+            Could not fetch data from server
+          </Typography>
+          <Typography component="p">Please refresh the page.</Typography>
+        </Paper>
+      );
+    }
     if (category !== "All") {
       favoriteThingsToRender = favoriteThingsToRender.filter(
         favThing => favThing.category === category
