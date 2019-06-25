@@ -1,0 +1,62 @@
+{
+  "name": "Yogesh Gupta",
+  "nationality": "Indian",
+  "qualifications": [
+    "B.E Computer Engineer"
+  ],
+  "strengths": [
+    "ownership of tasks",
+    "handle responsibility",
+    "self learner"
+  ],
+  "digital_identity": {
+    "phone": "+91 8898 500 253",
+    "email": "07yogeshgupta@gmail.com",
+    "profiles": [
+      {
+        "platform": "github",
+        "link": "https://github.com/incorrectusername"
+      },
+      {
+        "platform": "LinkedIn",
+        "link": "https://www.linkedin.com/in/thatyogeshgupta"
+      },
+      {
+        "platform": "codechef",
+        "link": "https://www.codechef.com/users/yogeshgupta/"
+      }
+    ]
+  },
+  "education": {
+    "college": "VESIT, Mumbai University",
+    "academic_year": "2014-2018",
+    "major": "Computer Engineering"
+  },
+  "experiences": [
+    {
+      "company_name": "UnFound",
+      "joining_date": "4th June, 2018",
+      "position": "Full Stack Developer",
+      "responsibility": [
+        "Developed the complete SSR website in React and NodeJS.",
+        "Developed backend (extraction service) for different operations which communicates with internal dashboard (third-eye) and ML services written in python.",
+        "Designed the database schema in Mongo.",
+        "Developed a service for searching topics/stories using elastic search.",
+        "Managed servers on the AWS.",
+        "Developed modules for the third-eye.",
+        "Developed a separate login flow along with firebase login for TCS ion"
+      ],
+      "current_company": true
+    }
+  ],
+  "skills": [
+    "Algorithms",
+    "Data Structures",
+    "Python",
+    "JavaScript",
+    "Java",
+    "MongoDB",
+    "ReactJS",
+    "NodeJS"
+  ]
+}
