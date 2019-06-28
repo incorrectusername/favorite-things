@@ -73,6 +73,7 @@ class SignUp extends React.Component {
       .then(resp => resp.data)
       .then(data => {
         window.document.cookie = "loggedIn=1";
+        window.document.cookie = `id=${data.user.id}`;
         this.props.dispatch({
           type: actionTypes.LOGIN,
           payload: data
