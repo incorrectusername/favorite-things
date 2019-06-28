@@ -1,14 +1,9 @@
-import datetime
-
 from sqlalchemy import Column, ForeignKey, DateTime, String, Index, UniqueConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.utils import constants
 from . import Base
-
-
-def _get_date():
-    return datetime.datetime.now()
 
 
 class User(Base):
@@ -16,7 +11,7 @@ class User(Base):
     email = Column(String(128), unique=True)
     password = Column(String(128))
     favorite_things = relationship("FavoriteThings", back_populates="user")
-    created = Column(DateTime, default=_get_date())
+    created = Column(DateTime(timezone=True), default=func.now())
 
     def __init__(self, email, password):
         self.email = email

@@ -1,14 +1,9 @@
-import datetime
-
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.utils import constants
 from . import Base
-
-
-def _get_date():
-    return datetime.datetime.now()
 
 
 class Audit(Base):
@@ -19,7 +14,7 @@ class Audit(Base):
     favorite_thing_id = Column(String(128), ForeignKey(f"{constants.FAVORITE_THINGS_TABLE}.id"))
     favorite_thing = relationship("FavoriteThings")
     text = Column(String(128), nullable=False)
-    created = Column(DateTime, default=_get_date())
+    created = Column(DateTime(timezone=True), default=func.now())
 
     def __init__(self, user_id: str, favorite_thing_id: str, text: str):
         self.text = text
