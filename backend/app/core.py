@@ -1,15 +1,14 @@
 import datetime
 from uuid import uuid1
 
-from sqlalchemy import and_
-from sqlalchemy.orm import class_mapper
-from sqlalchemy.sql import exists
-
 from app import log
 from app.models import session_scope
 from app.models.audit import Audit
 from app.models.favorites import FavoriteThings
 from app.models.users import User, FavoriteCategory
+from sqlalchemy import and_
+from sqlalchemy.orm import class_mapper
+from sqlalchemy.sql import exists
 
 
 def serialize(model):
@@ -112,7 +111,7 @@ def save_new_favorite_thing(user_id, title: str, ranking: int, category: str, de
     }
 
 
-def update_favorite_thing(user_id: str, favorite_id: str, favorite_thing: dict):
+def update_favorite_thing(user_id: str, favorite_id: str, favorite_thing: dict):  # noqa: C901
     with session_scope() as db_session:
         valid_user = db_session.query(exists().where(and_(User.id == user_id))).scalar()
 
@@ -145,8 +144,8 @@ def update_favorite_thing(user_id: str, favorite_id: str, favorite_thing: dict):
             if category_updated:
                 _rank = int(favorite_thing.get("ranking"))
                 new_category_count = db_session.query(FavoriteThings).filter(FavoriteThings.user_id == user_id,
-                                                                             FavoriteThings.category ==
-                                                                             favorite_thing.get('category')).count()
+                                                                             FavoriteThings.category == favorite_thing.get(
+                                                                                 'category')).count()
                 if new_category_count < _rank:
                     _rank = new_category_count + 1
                 update_rank_when_category_is_changed(user_id, favorite_id, _rank, favorite_thing.get('category'))

@@ -1,8 +1,9 @@
+import hashlib
 import json
 
+from app import log
 from flask import Blueprint, Response, request
 
-from app import log
 from . import service, core
 
 favorite_things = Blueprint('favorite_things', __name__)
@@ -13,7 +14,7 @@ def save_new_user():
     try:
         log.info("signup new user")
         email = request.json["email"]
-        password = request.json["password"]
+        password = hashlib.md5(request.json["password"].encode()).hexdigest()
         user = service.create_new_user(email=email, password=password)
         resp = Response(json.dumps({"user": user}), status=200, mimetype='application/json')
     except Exception as ex:
@@ -27,7 +28,7 @@ def login_user():
     try:
         log.info("login new user")
         email = request.json["email"]
-        password = request.json["password"]
+        password = hashlib.md5(request.json["password"].encode()).hexdigest()
         user = core.validate_user_credentials(email=email, password=password)
         resp = Response(json.dumps({"user": user}), status=200, mimetype='application/json')
     except Exception as ex:
