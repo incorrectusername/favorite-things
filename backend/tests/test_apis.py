@@ -5,7 +5,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy_utils.functions.database import drop_database
-from app import __initialize_app
+from wsgi import __initialize_app
 
 os.environ["DB_URI"] = "mysql+pymysql://root:root@localhost/favorite"
 
