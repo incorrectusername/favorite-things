@@ -7,7 +7,7 @@
 ### DB schema
 ![Database Schema](backend/schema.png)
 
-###Approach
+### Approach
  - A new table `user_category` is defined to store categories defined by users.<br/>
  By default it gets populated with 3 categories ["person","place,"food"] as soon as a new user is created.
  - The most important part of the application was to reorder the list of favorite things 
@@ -42,8 +42,16 @@
      
 ### Deployment
 
-- backend : flask-uwsgi server running on an aws ec2 instance with nginx as reverse proxy.
-<br/>
-I tried aws lambda and zappa but i was facing issues after deployment.
-I almost spend one day to trouble shoot the problems.
+- Backend : flask-uwsgi server running on an aws ec2 instance with nginx as reverse proxy.<br/>
+  I tried aws lambda and zappa but i was facing issues after deployment.
+  I almost spend one day to trouble shoot the problems.
 - Frontend is deployed on aws s3 bucket.
+
+
+### Technologies
+- Backend: Python, Flask, SqlAlchemy, Alembic, pytest.
+- Frontend: JavaScript, ReactJS,React-Redux, Redux, material-ui. 
+
+### Linting
+ - Backend: Pycharm's inbuilt linter along with flake8.
+ - Frontend: Prettier.
