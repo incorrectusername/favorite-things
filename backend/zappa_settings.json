@@ -1,0 +1,10 @@
+{
+    "dev": {
+        "app_function": "app.flask_server",
+        "aws_region": "ap-south-1",
+        "profile_name": "default",
+        "project_name": "backend",
+        "runtime": "python3.7",
+        "s3_bucket": "zappa-fc364h388"
+    }
+}

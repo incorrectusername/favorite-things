@@ -41,3 +41,9 @@
      
      
 ### Deployment
+
+- backend : flask-uwsgi server running on an aws ec2 instance with nginx as reverse proxy.
+<br/>
+I tried aws lambda and zappa but i was facing issues after deployment.
+I almost spend one day to trouble shoot the problems.
+- Frontend is deployed on aws s3 bucket.
