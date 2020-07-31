@@ -1,3 +1,5 @@
+# Note: This repo was a take-away assignment submitted to a company for a job.
+
 # favorite-things
 
 - Folder backed contains everything related to run backend.
